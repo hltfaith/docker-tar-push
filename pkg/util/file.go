@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 //Exists 判断所给路径文件/文件夹是否存在
@@ -17,6 +18,30 @@ func Exists(path string) bool {
 		return false
 	}
 	return true
+}
+
+// 所有文件绝对路径
+func FilesPath(path string) ([]string, error) {
+	fd, err := os.Stat(path)
+	if err != nil {
+		return nil, err
+	}
+	var filespath []string = []string{}
+	if !fd.IsDir() {
+		filespath = append(filespath, path)
+		return filespath, nil
+	}
+
+	err = filepath.Walk(path, func(subPath string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			filespath = append(filespath, subPath)
+		}
+		return err
+	})
+	return filespath, err
 }
 
 //GetFileSize 获取文件大小
